@@ -1,3 +1,7 @@
+from unittest import result
+
+from flet.core import row
+
 from database.DB_connect import DBConnect
 from model.user import User
 
@@ -40,5 +44,37 @@ class Dao:
 
         return results
 
-    def prova():
-        print("Executing prova from database using SQL query")
+    @staticmethod
+    def get_business_counts():
+        cnx = DBConnect.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+        SELECT user_id, COUNT(DISTINCT business_id) as num_bus
+        FROM Reviews            
+        GROUP BY user_id
+        """
+        cursor.execute(query)
+        result = {row['user_id']: row['num_bus'] for row in cursor}
+        cursor.close()
+        cnx.close()
+        return result
+
+    @staticmethod
+    def get_shared_businesses():
+        cnx = DBConnect.get_connection()
+        cursor = cnx.cursor(dictionary=True)
+        query = """
+        SELECT R1.user_id AS U1, R2.user_id AS U2, COUNT(DISTINCT R1.business_id) as peso
+        FROM Reviews R1
+        JOIN Reviews AS R2 on R1.business_id = R2.business_id
+        WHERE R1.user_id < R2.user_id
+        GROUP BY R1.user_id, R2.user_id
+        """
+        cursor.execute(query)
+        result = [(row['U1'], row['U2'], row['peso']) for row in cursor]
+        cursor.close()
+        cnx.close()
+        return result
+
+
+
