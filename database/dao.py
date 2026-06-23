@@ -39,3 +39,6 @@ class Dao:
         cnx.close()
 
         return results
+
+    def prova():
+        print("Executing prova from database using SQL query")
